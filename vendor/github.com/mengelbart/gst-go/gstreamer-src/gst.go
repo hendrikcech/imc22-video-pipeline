@@ -58,7 +58,7 @@ func NewPipeline(codec, src string) (*Pipeline, error) {
 
 	case "v4l2h264":
 		payloader = "rtph264pay"
-		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls='encode,h264_level=0,h264_profile=1,video_bitrate_mode=0' ! 'video/x-h264,level=(string)4' ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=0,h264_profile=1,video_bitrate_mode=0 ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
 
 	default:
 		return nil, ErrUnknownCodec
