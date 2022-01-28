@@ -97,6 +97,7 @@ func startSender() error {
 		SCReAM:       scream,
 		GCC:          gcc,
 		LocalRFC8888: localRFC8888,
+		InitialBitrate: 1_000_000,
 	}
 
 	var transport rtc.Transport
@@ -143,13 +144,13 @@ func startSender() error {
 
 	var src rtc.MediaSource
 	if senderCodec == "syncodec" {
-		src, err = syncodecPipeline(100_000)
+		src, err = syncodecPipeline(c.InitialBitrate)
 		if err != nil {
 			return err
 		}
 	} else {
 		var gstSrc *gstsrc.Pipeline
-		gstSrc, err = gstSrcPipeline(senderCodec, source, 0, 100_000)
+		gstSrc, err = gstSrcPipeline(senderCodec, source, 0, c.InitialBitrate)
 		if err != nil {
 			return err
 		}

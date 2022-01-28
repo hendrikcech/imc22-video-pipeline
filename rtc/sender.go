@@ -53,6 +53,7 @@ type SenderConfig struct {
 	SCReAM       bool
 	GCC          bool
 	LocalRFC8888 bool
+	InitialBitrate uint
 }
 
 type rateController struct {
@@ -154,12 +155,12 @@ func GstreamerSenderFactory(ctx context.Context, c SenderConfig, session Transpo
 	}
 	var rc rateController
 	if c.SCReAM {
-		if err := registerSCReAM(&ir, rc.screamLoopFactory(ctx, c.CCDump)); err != nil {
+		if err := registerSCReAM(&ir, c.InitialBitrate, rc.screamLoopFactory(ctx, c.CCDump)); err != nil {
 			return nil, err
 		}
 	}
 	if c.GCC {
-		if err := registerGCC(&ir, rc.gccLoopFactory(ctx, c.CCDump)); err != nil {
+		if err := registerGCC(&ir, c.InitialBitrate, rc.gccLoopFactory(ctx, c.CCDump)); err != nil {
 			return nil, err
 		}
 		if err := registerTWCCHeaderExtension(&ir); err != nil {
