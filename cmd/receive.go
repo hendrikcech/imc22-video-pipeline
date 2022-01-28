@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	gstsink "github.com/mengelbart/gst-go/gstreamer-sink"
 	"github.com/mengelbart/rtp-over-quic/rtc"
@@ -19,6 +20,7 @@ var (
 	receiveAddr      string
 	receiverRTPDump  string
 	receiverRTCPDump string
+	fpsDump          string
 	receiverCodec    string
 	receiverQLOGDir  string
 	sink             string
@@ -37,6 +39,7 @@ func init() {
 	receiveCmd.Flags().StringVar(&sink, "sink", "autovideosink", "Media sink")
 	receiveCmd.Flags().StringVar(&receiverRTPDump, "rtp-dump", "", "RTP dump file")
 	receiveCmd.Flags().StringVar(&receiverRTCPDump, "rtcp-dump", "", "RTCP dump file")
+	receiveCmd.Flags().StringVar(&fpsDump, "fps-dump", "", "FPS dump file, use with --sink=fpsdisplaysink")
 	receiveCmd.Flags().StringVar(&receiverQLOGDir, "qlog", "", "QLOG directory. No logs if empty. Use 'sdtout' for Stdout or '<directory>' for a QLOG file named '<directory>/<connection-id>.qlog'")
 	receiveCmd.Flags().BoolVarP(&rfc8888, "rfc8888", "r", false, "Send RTCP Feedback for congestion control (RFC 8888)")
 	receiveCmd.Flags().BoolVarP(&twcc, "twcc", "t", false, "Send RTCP transport wide congestion control feedback")
@@ -64,6 +67,12 @@ func startReceiver() error {
 	}
 	defer rtcpDumpfile.Close()
 
+	fpsDumpfile, err := getLogFile(fpsDump)
+	if err != nil {
+		return err
+	}
+	defer fpsDumpfile.Close()
+
 	c := rtc.ReceiverConfig{
 		RTPDump:  rtpDumpFile,
 		RTCPDump: rtcpDumpfile,
@@ -84,7 +93,7 @@ func startReceiver() error {
 		return nopCloser{io.Discard}, nil
 	}
 	if receiverCodec != "syncodec" {
-		mediaSink = gstSinkFactory(receiverCodec, sink)
+		mediaSink = gstSinkFactory(receiverCodec, sink, fpsDumpfile)
 	}
 
 	errCh := make(chan error)
@@ -141,7 +150,7 @@ func startReceiver() error {
 	}
 }
 
-func gstSinkFactory(codec string, sink string) rtc.MediaSinkFactory {
+func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFactory {
 	var dst string
 	if sink == "fpsdisplaysink" {
 		dst = "clocksync ! fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false"
@@ -164,7 +173,8 @@ func gstSinkFactory(codec string, sink string) rtc.MediaSinkFactory {
 						if !ok {
 							return
 						}
-						log.Printf("fps: current=%f, average=%f, loss=%f",
+						fmt.Fprintf(fps, "%s\t%f\t%f\t%f\n",
+							time.Now().Format(time.RFC3339Nano),
 							fpsMeas.FpsCurrent, fpsMeas.FpsAverage, fpsMeas.LossRate)
 					}
 				}
