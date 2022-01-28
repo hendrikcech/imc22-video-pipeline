@@ -82,8 +82,8 @@ func (c *rateController) screamLoopFactory(ctx context.Context, file io.Writer) 
 					}
 					stats := bwe.GetStats()
 					fmt.Fprintf(
-						file, "%v, %v, %v, %v, %v, %v, %v, %v, %v, %v\n",
-						now.UnixMilli(),
+						file, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+						now.Format(time.RFC3339Nano),
 						target,
 						stats["queueDelay"],
 						stats["sRTT"],
@@ -122,7 +122,18 @@ func (c *rateController) gccLoopFactory(ctx context.Context, file io.Writer) cc.
 						continue
 					}
 					stats := bwe.GetStats()
-					fmt.Fprintf(file, "%v, %v, %v, %v, %v, %v, %v, %v, %v, %v, %v\n", now.UnixMilli(), target, stats["lossTargetBitrate"], stats["averageLoss"], stats["delayTargetBitrate"], stats["delayMeasurement"], stats["delayEstimate"], stats["delayThreshold"], stats["rtt"], stats["usage"], stats["state"])
+					fmt.Fprintf(file, "%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+						now.Format(time.RFC3339Nano),
+						target,
+						stats["lossTargetBitrate"],
+						stats["averageLoss"],
+						stats["delayTargetBitrate"],
+						stats["delayMeasurement"],
+						stats["delayEstimate"],
+						stats["delayThreshold"],
+						stats["rtt"],
+						stats["usage"],
+						stats["state"])
 					if len(c.pipelines) == 0 {
 						continue
 					}

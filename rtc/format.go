@@ -24,8 +24,8 @@ func (f *rtpFormatter) rtpFormat(pkt *rtp.Packet, _ interceptor.Attributes) stri
 		}
 		twccNr = twcc.TransportSequence
 	}
-	return fmt.Sprintf("%v, %v, %v, %v, %v, %v, %v, %v, %v\n",
-		time.Now().UnixMilli(),
+	return fmt.Sprintf("%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\t%v\n",
+		time.Now().Format(time.RFC3339Nano),
 		pkt.PayloadType,
 		pkt.SSRC,
 		pkt.SequenceNumber,
@@ -38,7 +38,7 @@ func (f *rtpFormatter) rtpFormat(pkt *rtp.Packet, _ interceptor.Attributes) stri
 }
 
 func rtcpFormat(pkts []rtcp.Packet, _ interceptor.Attributes) string {
-	now := time.Now().UnixMilli()
+	now := time.Now()
 	size := 0
 	for _, pkt := range pkts {
 		switch feedback := pkt.(type) {
@@ -48,5 +48,5 @@ func rtcpFormat(pkts []rtcp.Packet, _ interceptor.Attributes) string {
 			size += int(len(*feedback))
 		}
 	}
-	return fmt.Sprintf("%v, %v\n", now, size)
+	return fmt.Sprintf("%v\t%v\n", now.Format(time.RFC3339Nano), size)
 }
