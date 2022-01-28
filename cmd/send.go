@@ -251,10 +251,10 @@ func streamSendLoop(session quic.Session) error {
 }
 
 func gstSrcPipeline(codec string, src string, ssrc uint, initialBitrate uint) (*gstsrc.Pipeline, error) {
-	if src != "videotestsrc" {
+	if src == "highrate" {
+		src = "videotestsrc ! video/x-raw,framerate=30/1,width=1920,height=1080 ! clocksync"
+	} else if src != "videotestsrc" {
 		src = fmt.Sprintf("filesrc location=%v ! decodebin ! clocksync ", src)
-	} else {
-		src = "videotestsrc ! clocksync "
 	}
 	srcPipeline, err := gstsrc.NewPipeline(codec, src)
 	if err != nil {
