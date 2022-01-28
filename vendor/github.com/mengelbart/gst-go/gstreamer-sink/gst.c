@@ -67,3 +67,17 @@ void gstreamer_receive_push_buffer(GstElement *pipeline, void *buffer, int len) 
     gst_object_unref(src);
   }
 }
+
+void gstreamer_on_fps_signal(GstElement *element, gdouble current_fps,  gdouble loss_rate, gdouble average_fps, gpointer user_data) {
+    SampleHandlerUserData *s = (SampleHandlerUserData*) user_data;
+    goOnFpsSignal(current_fps, loss_rate, average_fps, s->pipelineId);
+}
+
+// Connect singal of fpsdisplaysink
+void gstreamer_connect_fps_signal(GstElement* pipeline, char *element_name, int pipelineId) {
+    GstElement *element = gst_bin_get_by_name(GST_BIN(pipeline), element_name);
+    SampleHandlerUserData* s = malloc(sizeof(SampleHandlerUserData));
+    s->pipelineId = pipelineId;
+    g_signal_connect(element, "fps-measurements", G_CALLBACK(gstreamer_on_fps_signal), s);
+    gst_object_unref(element);
+}

@@ -141,9 +141,12 @@ func startReceiver() error {
 	}
 }
 
-func gstSinkFactory(codec string, dst string) rtc.MediaSinkFactory {
-	if dst != "autovideosink" {
-		dst = fmt.Sprintf("clocksync ! y4menc ! filesink location=%v", dst)
+func gstSinkFactory(codec string, sink string) rtc.MediaSinkFactory {
+	var dst string
+	if sink == "fpsdisplaysink" {
+		dst = "clocksync ! fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false"
+	} else if sink != "autovideosink" {
+		dst = fmt.Sprintf("clocksync ! y4menc ! filesink location=%v", sink)
 	} else {
 		dst = "clocksync ! autovideosink"
 	}
@@ -151,6 +154,21 @@ func gstSinkFactory(codec string, dst string) rtc.MediaSinkFactory {
 		dstPipeline, err := gstsink.NewPipeline(codec, dst)
 		if err != nil {
 			return nil, err
+		}
+		if sink == "fpsdisplaysink" {
+			fpsChan := dstPipeline.ConnectFpsSignal("fpssink")
+			go func() {
+				for {
+					select {
+					case fpsMeas, ok := <-fpsChan:
+						if !ok {
+							return
+						}
+						log.Printf("fps: current=%f, average=%f, loss=%f",
+							fpsMeas.FpsCurrent, fpsMeas.FpsAverage, fpsMeas.LossRate)
+					}
+				}
+			}()
 		}
 		log.Printf("run gstreamer pipeline: [%v]", dstPipeline.String())
 		dstPipeline.Start()
