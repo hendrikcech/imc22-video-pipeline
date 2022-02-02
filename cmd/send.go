@@ -93,12 +93,12 @@ func startSender() error {
 	defer rtcpDumpFile.Close()
 
 	c := rtc.SenderConfig{
-		RTPDump:      rtpDumpFile,
-		RTCPDump:     rtcpDumpFile,
-		CCDump:       ccDumpFile,
-		SCReAM:       scream,
-		GCC:          gcc,
-		LocalRFC8888: localRFC8888,
+		RTPDump:        rtpDumpFile,
+		RTCPDump:       rtcpDumpFile,
+		CCDump:         ccDumpFile,
+		SCReAM:         scream,
+		GCC:            gcc,
+		LocalRFC8888:   localRFC8888,
 		InitialBitrate: 1_000_000,
 	}
 

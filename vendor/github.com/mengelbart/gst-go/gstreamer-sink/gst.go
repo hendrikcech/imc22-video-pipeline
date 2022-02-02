@@ -9,10 +9,10 @@ package gst
 import "C"
 import (
 	"errors"
-	"sync"
-	"log"
-	"unsafe"
 	"fmt"
+	"log"
+	"sync"
+	"unsafe"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")
@@ -38,7 +38,7 @@ type Pipeline struct {
 	id          int
 	pipeline    *C.GstElement
 	pipelineStr string
-	fpsChan   chan FpsMeasurement
+	fpsChan     chan FpsMeasurement
 }
 
 func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
@@ -64,7 +64,7 @@ func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 	pipelineStrUnsafe := C.CString(pipelineStr)
 	defer C.free(unsafe.Pointer(pipelineStrUnsafe))
 	sp := &Pipeline{
-		id: len(pipelines),
+		id:          len(pipelines),
 		pipeline:    C.gstreamer_receive_create_pipeline(pipelineStrUnsafe),
 		pipelineStr: pipelineStr,
 	}
@@ -118,7 +118,7 @@ func (p *Pipeline) Close() error {
 	return nil
 }
 
-func (p *Pipeline) ConnectFpsSignal(elementName string) (chan FpsMeasurement) {
+func (p *Pipeline) ConnectFpsSignal(elementName string) chan FpsMeasurement {
 	if p.fpsChan != nil {
 		panic("Can connect fps signal only once")
 	}

@@ -10,11 +10,11 @@ import "C"
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"sync"
 	"unsafe"
-	"fmt"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")

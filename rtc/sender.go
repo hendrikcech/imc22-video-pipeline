@@ -47,12 +47,12 @@ type Sender struct {
 }
 
 type SenderConfig struct {
-	RTPDump      io.Writer
-	RTCPDump     io.Writer
-	CCDump       io.Writer
-	SCReAM       bool
-	GCC          bool
-	LocalRFC8888 bool
+	RTPDump        io.Writer
+	RTCPDump       io.Writer
+	CCDump         io.Writer
+	SCReAM         bool
+	GCC            bool
+	LocalRFC8888   bool
 	InitialBitrate uint
 }
 
