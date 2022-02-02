@@ -60,6 +60,9 @@ func NewPipeline(codec, src string) (*Pipeline, error) {
 		payloader = "rtph264pay"
 		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
 
+	case "v4l2h264-save":
+		payloader = "rtph264pay"
+		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! tee name=tsend ! queue ! h264parse ! matroskamux ! filesink location=/tmp/pi-video.mkv tsend. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
 	default:
 		return nil, ErrUnknownCodec
 	}
