@@ -154,6 +154,8 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 	var dst string
 	if sink == "fpsdisplaysink" {
 		dst = "clocksync ! fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false"
+	} else if sink == "fpsandsave" {
+		dst = "clocksync ! tee name=t ! queue ! fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false t. ! queue ! y4menc ! filesink location=/tmp/video.yuv "
 	} else if sink != "autovideosink" {
 		dst = fmt.Sprintf("clocksync ! y4menc ! filesink location=%v", sink)
 	} else {
@@ -164,7 +166,7 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 		if err != nil {
 			return nil, err
 		}
-		if sink == "fpsdisplaysink" {
+		if sink == "fpsdisplaysink" || sink == "fpsandsave" {
 			fpsChan := dstPipeline.ConnectFpsSignal("fpssink")
 			go func() {
 				for {

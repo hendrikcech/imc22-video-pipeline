@@ -255,7 +255,7 @@ func gstSrcPipeline(codec string, src string, ssrc uint, initialBitrate uint) (*
 	if src == "highrate" {
 		src = "videotestsrc ! video/x-raw,framerate=30/1,width=1920,height=1080 ! clocksync"
 	} else if src != "videotestsrc" {
-		src = fmt.Sprintf("filesrc location=%v ! decodebin ! clocksync ", src)
+		src = fmt.Sprintf("filesrc location=%v ! queue ! qtdemux ! h264parse ! v4l2h264dec ! clocksync ", src)
 	}
 	srcPipeline, err := gstsrc.NewPipeline(codec, src)
 	if err != nil {
