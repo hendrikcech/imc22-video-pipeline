@@ -53,6 +53,9 @@ func NewPipeline(codecName, dst string) (*Pipeline, error) {
 	case "h264":
 		pipelineStr += " ! rtpjitterbuffer ! rtph264depay ! decodebin ! videoconvert ! " + dst
 
+	case "h264-save":
+		pipelineStr += " ! rtpjitterbuffer ! rtph264depay ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=/tmp/se-video.mkv t. ! queue ! decodebin ! videoconvert ! " + dst
+
 	default:
 		return nil, ErrUnknownCodec
 	}
