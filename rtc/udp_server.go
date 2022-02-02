@@ -87,7 +87,7 @@ func (t *udpTransport) ReceiveMessage() ([]byte, error) {
 	select {
 	case msg := <-t.in:
 		return msg, nil
-	case <-time.After(4 * time.Second):
+	case <-time.After(60 * time.Second):
 		return nil, fmt.Errorf("timeout")
 	}
 }
