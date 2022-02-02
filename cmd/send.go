@@ -30,6 +30,7 @@ var (
 	senderRTCPDump string
 	senderCodec    string
 	source         string
+	savePath       string
 	ccDump         string
 	senderQLOGDir  string
 	tcpCongAlg     string
@@ -49,6 +50,7 @@ func init() {
 	sendCmd.Flags().StringVarP(&sendAddr, "addr", "a", ":4242", "QUIC server address")
 	sendCmd.Flags().StringVarP(&senderCodec, "codec", "c", "h264", "Media codec")
 	sendCmd.Flags().StringVar(&source, "source", "videotestsrc", "Media source")
+	sendCmd.Flags().StringVar(&savePath, "save", "", "Save outgoing video to file")
 	sendCmd.Flags().StringVar(&senderRTPDump, "rtp-dump", "", "RTP dump file, 'stdout' for Stdout")
 	sendCmd.Flags().StringVar(&senderRTCPDump, "rtcp-dump", "", "RTCP dump file, 'stdout' for Stdout")
 	sendCmd.Flags().StringVar(&ccDump, "cc-dump", "", "Congestion Control log file, use 'stdout' for Stdout")
@@ -257,7 +259,7 @@ func gstSrcPipeline(codec string, src string, ssrc uint, initialBitrate uint) (*
 	} else if src != "videotestsrc" {
 		src = fmt.Sprintf("filesrc location=%v ! queue ! qtdemux ! h264parse ! v4l2h264dec ! clocksync ", src)
 	}
-	srcPipeline, err := gstsrc.NewPipeline(codec, src)
+	srcPipeline, err := gstsrc.NewPipeline(codec, src, savePath)
 	if err != nil {
 		return nil, err
 	}

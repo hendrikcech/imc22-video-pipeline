@@ -22,10 +22,11 @@ var (
 	receiverRTCPDump string
 	fpsDump          string
 	receiverCodec    string
-	receiverQLOGDir  string
-	sink             string
-	rfc8888          bool
-	twcc             bool
+	// savePath         string // declared in send.go
+	receiverQLOGDir string
+	sink            string
+	rfc8888         bool
+	twcc            bool
 )
 
 func init() {
@@ -36,6 +37,7 @@ func init() {
 	receiveCmd.Flags().StringVar(&receiveTransport, "transport", "quic", "Transport protocol to use")
 	receiveCmd.Flags().StringVarP(&receiveAddr, "addr", "a", ":4242", "QUIC server address")
 	receiveCmd.Flags().StringVarP(&receiverCodec, "codec", "c", "h264", "Media codec")
+	receiveCmd.Flags().StringVar(&savePath, "save", "", "Save outgoing video to file")
 	receiveCmd.Flags().StringVar(&sink, "sink", "autovideosink", "Media sink")
 	receiveCmd.Flags().StringVar(&receiverRTPDump, "rtp-dump", "", "RTP dump file")
 	receiveCmd.Flags().StringVar(&receiverRTCPDump, "rtcp-dump", "", "RTCP dump file")
@@ -160,7 +162,7 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 		dst = "clocksync ! autovideosink"
 	}
 	return func() (rtc.MediaSink, error) {
-		dstPipeline, err := gstsink.NewPipeline(codec, dst)
+		dstPipeline, err := gstsink.NewPipeline(codec, dst, savePath)
 		if err != nil {
 			return nil, err
 		}

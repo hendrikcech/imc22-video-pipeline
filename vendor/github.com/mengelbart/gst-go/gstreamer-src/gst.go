@@ -14,6 +14,7 @@ import (
 	"log"
 	"sync"
 	"unsafe"
+	"fmt"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")
@@ -39,7 +40,7 @@ type Pipeline struct {
 	codec       string
 }
 
-func NewPipeline(codec, src string) (*Pipeline, error) {
+func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 	pipelineStr := "appsink name=appsink"
 	var payloader string
 
@@ -58,11 +59,11 @@ func NewPipeline(codec, src string) (*Pipeline, error) {
 
 	case "v4l2h264":
 		payloader = "rtph264pay"
-		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
-
-	case "v4l2h264-save":
-		payloader = "rtph264pay"
-		pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=/tmp/pi-video.mkv t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+		if savePath == "" {
+			pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+		} else {
+			pipelineStr = fmt.Sprintf("%s ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePath, pipelineStr)
+		}
 	default:
 		return nil, ErrUnknownCodec
 	}

@@ -12,6 +12,7 @@ import (
 	"sync"
 	"log"
 	"unsafe"
+	"fmt"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")
@@ -40,7 +41,7 @@ type Pipeline struct {
 	fpsChan   chan FpsMeasurement
 }
 
-func NewPipeline(codecName, dst string) (*Pipeline, error) {
+func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 	pipelineStr := "appsrc name=src ! application/x-rtp"
 
 	switch codecName {
@@ -51,11 +52,11 @@ func NewPipeline(codecName, dst string) (*Pipeline, error) {
 		pipelineStr += ", encoding-name=VP9-DRAFT-IETF-01 ! rtpjitterbuffer ! rtpvp9depay ! decodebin ! videoconvert ! " + dst
 
 	case "h264":
-		pipelineStr += " ! rtpjitterbuffer ! rtph264depay ! decodebin ! videoconvert ! " + dst
-
-	case "h264-save":
-		pipelineStr += " ! rtpjitterbuffer ! rtph264depay ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=/tmp/se-video.mkv t. ! queue ! decodebin ! videoconvert ! " + dst
-
+		if savePath == "" {
+			pipelineStr += " ! rtpjitterbuffer ! rtph264depay ! decodebin ! videoconvert ! " + dst
+		} else {
+			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer ! rtph264depay ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=%s t. ! queue ! decodebin ! videoconvert ! %s", pipelineStr, savePath, dst)
+		}
 	default:
 		return nil, ErrUnknownCodec
 	}
