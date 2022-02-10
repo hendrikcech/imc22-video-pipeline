@@ -98,7 +98,7 @@ func registerRFC8888(r *interceptor.Registry) error {
 
 func registerSCReAM(r *interceptor.Registry, initialBitrate uint, cb scream.NewPeerConnectionCallback) error {
 	var tx *scream.SenderInterceptorFactory
-	tx, err := scream.NewSenderInterceptor(scream.InitialBitrate(float64(initialBitrate)), scream.MinBitrate(100_000))
+	tx, err := scream.NewSenderInterceptor(scream.InitialBitrate(float64(initialBitrate)), scream.MinBitrate(100_000), scream.MaxBitrate(15_000_000))
 	if err != nil {
 		return err
 	}

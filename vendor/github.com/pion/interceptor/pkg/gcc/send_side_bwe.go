@@ -14,7 +14,7 @@ const (
 	transportCCURI = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
 	latestBitrate  = 10_000
 	minBitrate     = 5_000
-	maxBitrate     = 50_000_000
+	maxBitrate     = 15_000_000
 )
 
 // Pacer is the interface implemented by packet pacers
