@@ -42,7 +42,7 @@ type Pipeline struct {
 
 func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 	pipelineStr := "appsink name=appsink"
-	var payloader string
+	var payloader, encoder string
 
 	switch codec {
 	case "vp8":
@@ -55,14 +55,28 @@ func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 
 	case "h264":
 		payloader = "rtph264pay"
-		pipelineStr = src + " ! x264enc name=encoder pass=5 speed-preset=4 tune=4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+		if savePath == "" {
+			pipelineStr = src + " ! x264enc name=encoder pass=0 speed-preset=4 tune=4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+		} else {
+			pipelineStr = fmt.Sprintf("%s ! x264enc name=encoder pass=0 speed-preset=4 tune=4 ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePath, pipelineStr)
+		}
+
+	case "vaapih264":
+		payloader = "rtph264pay"
+		encoder = "vaapih264enc name=encoder rate-control=cbr tune=low-power"
+		if savePath == "" {
+			pipelineStr = fmt.Sprintf("%s ! %s ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
+		} else {
+			pipelineStr = fmt.Sprintf("%s ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, savePath, pipelineStr)
+		}
 
 	case "v4l2h264":
 		payloader = "rtph264pay"
+		encoder = "v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr"
 		if savePath == "" {
-			pipelineStr = src + " ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+			pipelineStr = fmt.Sprintf("%s ! %s ! video/x-h264,level=(string)4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! v4l2h264enc name=encoder extra-controls=encode,h264_level=13,h264_profile=high,video_bitrate_mode=cbr ! video/x-h264,level=(string)4 ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePath, pipelineStr)
+			pipelineStr = fmt.Sprintf("%s ! %s ! video/x-h264,level=(string)4 ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, savePath, pipelineStr)
 		}
 	default:
 		return nil, ErrUnknownCodec
@@ -156,7 +170,7 @@ func (p *Pipeline) SetBitRate(bitrate uint) {
 	switch p.codec {
 	case "vp8", "vp9":
 		prop = "target-bitrate"
-	case "h264":
+	case "h264", "vaapih264":
 		value = value / 1000
 	}
 	//previous := p.getPropertyUint("encoder", prop)

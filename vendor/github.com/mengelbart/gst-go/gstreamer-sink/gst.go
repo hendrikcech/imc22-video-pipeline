@@ -55,7 +55,7 @@ func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 		if savePath == "" {
 			pipelineStr += " ! rtpjitterbuffer latency=100 ! rtph264depay ! decodebin ! videoconvert ! " + dst
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=100 ! rtph264depay ! tee name=t ! queue ! h264parse ! matroskamux ! filesink location=%s t. ! queue ! decodebin ! videoconvert ! %s", pipelineStr, savePath, dst)
+			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=100 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! decodebin ! videoconvert ! %s", pipelineStr, savePath, dst)
 		}
 	default:
 		return nil, ErrUnknownCodec
