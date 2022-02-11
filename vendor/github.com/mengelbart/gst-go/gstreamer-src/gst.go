@@ -63,7 +63,7 @@ func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 
 	case "vaapih264":
 		payloader = "rtph264pay"
-		encoder = "vaapih264enc name=encoder rate-control=cbr tune=low-power"
+		encoder = "vaapih264enc name=encoder rate-control=cbr" //  tune=low-power is incompatible with cbr on the NUCs
 		if savePath == "" {
 			pipelineStr = fmt.Sprintf("%s ! %s ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
 		} else {
