@@ -14,7 +14,7 @@ const (
 	transportCCURI = "http://www.ietf.org/id/draft-holmer-rmcat-transport-wide-cc-extensions-01"
 	latestBitrate  = 10_000
 	minBitrate     = 5_000
-	maxBitrate     = 15_000_000
+	maxBitrate     = 50_000_000
 )
 
 // Pacer is the interface implemented by packet pacers
@@ -56,6 +56,14 @@ type Option func(*SendSideBWE) error
 func SendSideBWEInitialBitrate(rate int) Option {
 	return func(e *SendSideBWE) error {
 		e.latestBitrate = rate
+		return nil
+	}
+}
+
+// SendSideBWEMaxBitrate sets the maximum bitrate of new GCC interceptors
+func SendSideBWEMaxBitrate(maxBitrate int) Option {
+	return func(e *SendSideBWE) error {
+		e.maxBitrate = maxBitrate
 		return nil
 	}
 }
