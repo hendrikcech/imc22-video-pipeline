@@ -39,6 +39,7 @@ var (
 	newReno        bool
 	sendStream     bool
 	localRFC8888   bool
+	initialBitrate uint
 )
 
 func init() {
@@ -61,6 +62,7 @@ func init() {
 	sendCmd.Flags().BoolVarP(&gcc, "gcc", "g", false, "Use Google Congestion Control")
 	sendCmd.Flags().BoolVarP(&newReno, "newreno", "n", false, "Enable NewReno Congestion Control")
 	sendCmd.Flags().BoolVar(&sendStream, "stream", false, "Send random data on a stream")
+	sendCmd.Flags().UintVarP(&initialBitrate, "init-rate", "b", 1_000_000, "The initial video bitrate in bps")
 }
 
 var sendCmd = &cobra.Command{
@@ -99,7 +101,7 @@ func startSender() error {
 		SCReAM:         scream,
 		GCC:            gcc,
 		LocalRFC8888:   localRFC8888,
-		InitialBitrate: 1_000_000,
+		InitialBitrate: initialBitrate,
 	}
 
 	var transport rtc.Transport
