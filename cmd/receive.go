@@ -156,6 +156,8 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 	var dst string
 	if sink == "fpsdisplaysink" {
 		dst = "clocksync ! fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false"
+	} else if sink == "fakesink" {
+		dst = fmt.Sprintf("clocksync ! fakesink", sink)
 	} else if sink != "autovideosink" {
 		dst = fmt.Sprintf("clocksync ! y4menc ! filesink location=%v", sink)
 	} else {
