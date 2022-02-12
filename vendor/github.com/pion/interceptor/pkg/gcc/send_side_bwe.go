@@ -60,6 +60,14 @@ func SendSideBWEInitialBitrate(rate int) Option {
 	}
 }
 
+// SendSideBWEMinBitrate sets the minimum bitrate of new GCC interceptors
+func SendSideBWEMinBitrate(minBitrate int) Option {
+	return func(e *SendSideBWE) error {
+		e.minBitrate = minBitrate
+		return nil
+	}
+}
+
 // SendSideBWEMaxBitrate sets the maximum bitrate of new GCC interceptors
 func SendSideBWEMaxBitrate(maxBitrate int) Option {
 	return func(e *SendSideBWE) error {
