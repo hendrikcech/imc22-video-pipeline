@@ -78,7 +78,11 @@ func (c *rateController) screamLoopFactory(ctx context.Context, file io.Writer) 
 						log.Printf("failed to get target bitrate: %v\n", err)
 					}
 					if target < 0 {
-						log.Printf("got negative target bitrate: %v\n", target)
+						if target == -1 {
+							log.Println("scream detected a loss")
+						} else {
+							log.Printf("got negative target bitrate: %v\n", target)
+						}
 						continue
 					}
 					stats := bwe.GetStats()
