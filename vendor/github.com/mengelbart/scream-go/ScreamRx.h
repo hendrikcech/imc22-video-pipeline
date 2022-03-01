@@ -27,7 +27,7 @@
 #define SCREAM_RX
 #include <cstdint>
 #include <list>
-const int kReportedRtpPackets = 64;
+const int kReportedRtpPackets = 64*4;
 const int kRxHistorySize = 128;
 
 /*
