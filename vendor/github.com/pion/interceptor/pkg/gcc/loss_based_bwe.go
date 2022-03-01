@@ -83,6 +83,7 @@ func (e *lossBasedBandwidthEstimator) updateLossEstimate(results []cc.Acknowledg
 	e.lock.Lock()
 	defer e.lock.Unlock()
 
+	// fmt.Printf("loss: %d/%d\n", packetsLost, len(results))
 	lossRatio := float64(packetsLost) / float64(len(results))
 	e.averageLoss = e.average(time.Since(e.lastLossUpdate), e.averageLoss, lossRatio)
 	e.lastLossUpdate = time.Now()
