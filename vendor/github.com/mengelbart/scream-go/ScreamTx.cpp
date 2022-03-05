@@ -983,7 +983,7 @@ void ScreamTx::detectLoss(uint32_t time_ntp, struct Transmitted *txPackets, uint
 				}
 				stream->bytesLost += tmp->size;
 				tmp->isUsed = false;
-				cerr << " LOSS detected by reorder timer SN=" << tmp->seqNr << ", " << tmp->timeTx_ntp << "+" << kReordertime_ntp << " < " << stream->timeTxAck_ntp << endl;
+				cerr << time_ntp / 65536.0f << " LOSS detected by reorder timer SN=" << tmp->seqNr << ", " << tmp->timeTx_ntp << "+" << kReordertime_ntp << " < " << stream->timeTxAck_ntp << endl;
 				stream->repairLoss = true;
 			}
 			else if (tmp->isAcked) {
@@ -1987,7 +1987,7 @@ void ScreamTx::Stream::updateTargetBitrate(uint32_t time_ntp) {
 			* throughput in the initial phase.
 			*/
 			rtpQueue->clear();
-			cerr << time_ntp / 65536.0f << " RTP queue discarded (1) for SSRC " << ssrc << endl;
+			cerr << time_ntp / 65536.0f << " RTP queue discarded (1): " << rtpQueueDelay << "s > " << maxRtpQueueDelay << "s" << endl;
 
 			rtpQueueDiscard = true;
 
@@ -2049,7 +2049,7 @@ void ScreamTx::Stream::updateTargetBitrate(uint32_t time_ntp) {
 			* throughput in the initial phase.
 			*/
 			rtpQueue->clear();
-			cerr << time_ntp / 65536.0f << " RTP queue discarded (2) for SSRC " << ssrc << endl;
+			cerr << time_ntp / 65536.0f << " RTP queue discarded (2): " << rtpQueueDelay << "s > " << maxRtpQueueDelay << "s" << endl;
 
 			rtpQueueDiscard = true;
 
