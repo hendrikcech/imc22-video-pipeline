@@ -168,7 +168,7 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 		if err != nil {
 			return nil, err
 		}
-		if sink == "fpsdisplaysink" || sink == "fpsandsave" {
+		if sink == "fpsdisplaysink" {
 			fpsChan := dstPipeline.ConnectFpsSignal("fpssink")
 			go func() {
 				for {
