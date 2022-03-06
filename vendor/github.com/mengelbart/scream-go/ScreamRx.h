@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <list>
 const int kReportedRtpPackets = 64*4;
-const int kRxHistorySize = 128;
+const int kRxHistorySize = 64*5;
 
 /*
 * This module implements the receiver side of SCReAM.
