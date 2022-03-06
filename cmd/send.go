@@ -259,7 +259,7 @@ func gstSrcPipeline(codec string, src string, ssrc uint, initialBitrate uint) (*
 	if src == "highrate" {
 		src = "videotestsrc ! video/x-raw,framerate=30/1,width=1920,height=1080 ! clocksync"
 	} else if src != "videotestsrc" {
-		decoder := "vaapih264dec "// "avdec_h264"
+		decoder := "avdec_h264" // "vaapih264dec "
 		if codec == "v4l2h264" {
 			decoder = "v4l2h264dec"
 		}

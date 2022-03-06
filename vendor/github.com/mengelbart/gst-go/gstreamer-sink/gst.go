@@ -13,6 +13,8 @@ import (
 	"log"
 	"sync"
 	"unsafe"
+	"strings"
+	"path/filepath"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")
@@ -55,7 +57,10 @@ func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 		if savePath == "" {
 			pipelineStr += " ! rtpjitterbuffer latency=100 ! rtph264depay ! decodebin ! videoconvert ! " + dst
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=100 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! decodebin ! videoconvert ! %s", pipelineStr, savePath, dst)
+			extension := filepath.Ext(savePath)
+			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
+			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=100 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! decodebin ! videoconvert ! clocksync ! timecodeparse location=%s ! %s", pipelineStr, savePath, savePathTime, dst)
+			// TODO: remove clocksync from getSinkFactory in receive.go
 		}
 	default:
 		return nil, ErrUnknownCodec

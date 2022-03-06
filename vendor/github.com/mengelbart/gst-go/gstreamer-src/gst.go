@@ -67,7 +67,8 @@ func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 		if savePath == "" {
 			pipelineStr = fmt.Sprintf("%s ! %s ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, savePath, pipelineStr)
+			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s",
+				src, encoder, savePath, pipelineStr)
 		}
 
 	case "v4l2h264":
