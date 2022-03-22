@@ -263,7 +263,7 @@ func gstSrcPipeline(codec string, src string, ssrc uint, initialBitrate uint) (*
 		if codec == "v4l2h264" {
 			decoder = "v4l2h264dec"
 		}
-		src = fmt.Sprintf("filesrc location=%v ! queue ! qtdemux ! h264parse ! %s ! clocksync ", src, decoder)
+		src = fmt.Sprintf("filesrc location=%v ! queue ! qtdemux ! h264parse ! %s ! queue ! clocksync ", src, decoder)
 	}
 	srcPipeline, err := gstsrc.NewPipeline(codec, src, savePath)
 	if err != nil {

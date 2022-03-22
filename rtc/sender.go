@@ -331,6 +331,8 @@ func (s *Sender) getRTPWriter(id uint64, ackCallback func(ackedPkt)) interceptor
 		ssrc := header.SSRC
 		ts := time.Now()
 
+		// log.Printf("Sending RTP #%v\n", seqNr)
+
 		if err := s.session.SendMessage(buf, nil, func(b bool) {
 			if ackCallback == nil {
 				return

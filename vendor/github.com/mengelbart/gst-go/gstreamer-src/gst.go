@@ -15,6 +15,8 @@ import (
 	"log"
 	"sync"
 	"unsafe"
+	"strings"
+	"path/filepath"
 )
 
 var ErrUnknownCodec = errors.New("unknown codec")
@@ -58,17 +60,21 @@ func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 		if savePath == "" {
 			pipelineStr = src + " ! x264enc name=encoder pass=0 speed-preset=4 tune=4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! x264enc name=encoder pass=0 speed-preset=4 tune=4 ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePath, pipelineStr)
+			extension := filepath.Ext(savePath)
+			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
+			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay location=%s ! x264enc name=encoder pass=cbr speed-preset=ultrafast tune=zerolatency key-int-max=30 ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePathTime, savePath, pipelineStr)
 		}
 
 	case "vaapih264":
 		payloader = "rtph264pay"
-		encoder = "vaapih264enc name=encoder rate-control=vbr target-percentage=70 quality-level=4" //  tune=low-power is incompatible with cbr on the NUCs
+		encoder = "vaapih264enc name=encoder rate-control=vbr target-percentage=70 quality-level=4"
 		if savePath == "" {
 			pipelineStr = fmt.Sprintf("%s ! %s ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
 		} else {
-			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s",
-				src, encoder, savePath, pipelineStr)
+			extension := filepath.Ext(savePath)
+			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
+			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay location=%s ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s",
+				src, savePathTime, encoder, savePath, pipelineStr)
 		}
 
 	case "v4l2h264":

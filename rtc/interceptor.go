@@ -73,10 +73,13 @@ func registerTWCCHeaderExtension(r *interceptor.Registry) error {
 	return nil
 }
 
+const MIN_BITRATE = 2_000_000
+const MAX_BITRATE = 25_000_000
+
 func registerGCC(r *interceptor.Registry, initialBitrate uint, cb cc.NewPeerConnectionCallback) error {
 	fx := func() (cc.BandwidthEstimator, error) {
 		return gcc.NewSendSideBWE(gcc.SendSideBWEInitialBitrate(int(initialBitrate)), gcc.SendSideBWEPacer(gcc.NewLeakyBucketPacer(int(initialBitrate))),
-			gcc.SendSideBWEMinBitrate(1_000_000), gcc.SendSideBWEMaxBitrate(25_000_000))
+			gcc.SendSideBWEMinBitrate(MIN_BITRATE), gcc.SendSideBWEMaxBitrate(MAX_BITRATE))
 	}
 	gccFactory, err := cc.NewInterceptor(fx)
 	if err != nil {
@@ -99,7 +102,7 @@ func registerRFC8888(r *interceptor.Registry) error {
 
 func registerSCReAM(r *interceptor.Registry, initialBitrate uint, cb scream.NewPeerConnectionCallback) error {
 	var tx *scream.SenderInterceptorFactory
-	tx, err := scream.NewSenderInterceptor(scream.InitialBitrate(float64(initialBitrate)), scream.MinBitrate(1_000_000), scream.MaxBitrate(25_000_000))
+	tx, err := scream.NewSenderInterceptor(scream.InitialBitrate(float64(initialBitrate)), scream.MinBitrate(MIN_BITRATE), scream.MaxBitrate(MAX_BITRATE))
 	if err != nil {
 		return err
 	}

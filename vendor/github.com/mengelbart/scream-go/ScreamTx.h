@@ -73,7 +73,7 @@ static const float kGainDown = 2.0f;
 
 // Stream related default parameters
 // Max video rampup speed in bps/s (bits per second increase per second)
-static const float kRampUpSpeed = 200000.0f; // bps/s
+static const float kRampUpSpeed = 1000000.0f; // default: 200000.0f; // bps/s
 // Max video rampup scale as fraction of the current target bitrate
 static const float kRampUpScale = 0.2f; 
 // Max RTP queue delay, RTP queue is cleared if this value is exceeded

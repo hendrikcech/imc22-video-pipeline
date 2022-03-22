@@ -59,7 +59,7 @@ func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 		} else {
 			extension := filepath.Ext(savePath)
 			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
-			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=100 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! h264parse ! avdec_h264 ! timecodeparse location=%s ! %s", pipelineStr, savePath, savePathTime, dst)
+			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=150 faststart-min-packets=50 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! h264parse ! avdec_h264 ! timecodeparse location=%s ! %s", pipelineStr, savePath, savePathTime, dst)
 			// TODO: remove clocksync from getSinkFactory in receive.go
 		}
 	default:
