@@ -55,11 +55,11 @@ func NewPipeline(codecName, dst, savePath string) (*Pipeline, error) {
 
 	case "h264":
 		if savePath == "" {
-			pipelineStr += " ! rtpjitterbuffer latency=100 ! rtph264depay ! decodebin ! videoconvert ! " + dst
+			pipelineStr += " ! rtpjitterbuffer name=rtpjitterbuffer latency=100 ! rtph264depay ! decodebin ! videoconvert ! " + dst
 		} else {
 			extension := filepath.Ext(savePath)
 			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
-			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer latency=150 faststart-min-packets=50 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! h264parse ! avdec_h264 ! timecodeparse location=%s ! %s", pipelineStr, savePath, savePathTime, dst)
+			pipelineStr = fmt.Sprintf("%s ! rtpjitterbuffer name=rtpjitterbuffer latency=150 faststart-min-packets=50 ! rtph264depay ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! h264parse ! avdec_h264 ! timecodeparse location=%s ! %s", pipelineStr, savePath, savePathTime, dst)
 			// TODO: remove clocksync from getSinkFactory in receive.go
 		}
 	default:
@@ -135,6 +135,11 @@ func (p *Pipeline) ConnectFpsSignal(elementName string) chan FpsMeasurement {
 	C.gstreamer_connect_fps_signal(p.pipeline, cElementName, C.int(p.id))
 
 	return p.fpsChan
+}
+
+func (p *Pipeline) RtpjitterbufferPercent() int {
+	percent := C.gstreamer_get_rtpjitterbuffer_percent(p.pipeline)
+	return int(percent)
 }
 
 //export goOnFpsSignal

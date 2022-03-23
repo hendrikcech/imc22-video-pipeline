@@ -21,6 +21,7 @@ var (
 	receiverRTPDump  string
 	receiverRTCPDump string
 	fpsDump          string
+	rtpbufferDump    string
 	receiverCodec    string
 	// savePath         string // declared in send.go
 	receiverQLOGDir string
@@ -42,6 +43,7 @@ func init() {
 	receiveCmd.Flags().StringVar(&receiverRTPDump, "rtp-dump", "", "RTP dump file")
 	receiveCmd.Flags().StringVar(&receiverRTCPDump, "rtcp-dump", "", "RTCP dump file")
 	receiveCmd.Flags().StringVar(&fpsDump, "fps-dump", "", "FPS dump file, use with --sink=fpsdisplaysink")
+	receiveCmd.Flags().StringVar(&rtpbufferDump, "rtpbuffer-dump", "", "RTPjitterbuffer dump file")
 	receiveCmd.Flags().StringVar(&receiverQLOGDir, "qlog", "", "QLOG directory. No logs if empty. Use 'sdtout' for Stdout or '<directory>' for a QLOG file named '<directory>/<connection-id>.qlog'")
 	receiveCmd.Flags().BoolVarP(&rfc8888, "rfc8888", "r", false, "Send RTCP Feedback for congestion control (RFC 8888)")
 	receiveCmd.Flags().BoolVarP(&twcc, "twcc", "t", false, "Send RTCP transport wide congestion control feedback")
@@ -75,6 +77,12 @@ func startReceiver() error {
 	}
 	defer fpsDumpfile.Close()
 
+	rtpbufferDumpfile, err := getLogFile(rtpbufferDump)
+	if err != nil {
+		return err
+	}
+	defer rtpbufferDumpfile.Close()
+
 	c := rtc.ReceiverConfig{
 		RTPDump:  rtpDumpFile,
 		RTCPDump: rtcpDumpfile,
@@ -95,7 +103,7 @@ func startReceiver() error {
 		return nopCloser{io.Discard}, nil
 	}
 	if receiverCodec != "syncodec" {
-		mediaSink = gstSinkFactory(receiverCodec, sink, fpsDumpfile)
+		mediaSink = gstSinkFactory(receiverCodec, sink, fpsDumpfile, rtpbufferDumpfile)
 	}
 
 	errCh := make(chan error)
@@ -152,7 +160,7 @@ func startReceiver() error {
 	}
 }
 
-func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFactory {
+func gstSinkFactory(codec string, sink string, fps io.Writer, rtpbuffer io.Writer) rtc.MediaSinkFactory {
 	var dst string
 	if sink == "fpsdisplaysink" {
 		dst = "fpsdisplaysink name=fpssink signal-fps-measurements=true fps-update-interval=100 video-sink=fakesink text-overlay=false"
@@ -184,6 +192,18 @@ func gstSinkFactory(codec string, sink string, fps io.Writer) rtc.MediaSinkFacto
 				}
 			}()
 		}
+
+		// TODO: not stopped
+		t := time.NewTicker(10 * time.Millisecond)
+		go func () {
+			for range t.C {
+				percent := dstPipeline.RtpjitterbufferPercent()
+				fmt.Fprintf(rtpbuffer, "%s\t%d\n", time.Now().Format(time.RFC3339Nano), percent)
+			}
+		}()
+
+
+
 		log.Printf("run gstreamer pipeline: [%v]", dstPipeline.String())
 		dstPipeline.Start()
 		return dstPipeline, nil

@@ -81,3 +81,14 @@ void gstreamer_connect_fps_signal(GstElement* pipeline, char *element_name, int 
     g_signal_connect(element, "fps-measurements", G_CALLBACK(gstreamer_on_fps_signal), s);
     gst_object_unref(element);
 }
+
+gint gstreamer_get_rtpjitterbuffer_percent(GstElement *pipeline) {
+  GstElement *buffer = gst_bin_get_by_name(GST_BIN(pipeline), "rtpjitterbuffer");
+  if (buffer != NULL) {
+    gint percent;
+    g_object_get(buffer, "percent", &percent, NULL);
+    gst_object_unref(buffer);
+    return percent;
+  }
+  return -1;
+}

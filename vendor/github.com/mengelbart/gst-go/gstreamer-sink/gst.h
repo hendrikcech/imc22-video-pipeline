@@ -24,5 +24,6 @@ extern void goOnFpsSignal(gdouble current_fps, gdouble loss_rate, gdouble averag
 void gstreamer_send_start_mainloop(void);
 
 void gstreamer_connect_fps_signal(GstElement* pipeline, char *element_name, int pipelineId);
+gint gstreamer_get_rtpjitterbuffer_percent(GstElement *pipeline);
 
 #endif

@@ -57,12 +57,13 @@ func NewPipeline(codec, src, savePath string) (*Pipeline, error) {
 
 	case "h264":
 		payloader = "rtph264pay"
+		encoder = "x264enc name=encoder pass=cbr speed-preset=ultrafast tune=zerolatency key-int-max=30"
 		if savePath == "" {
-			pipelineStr = src + " ! x264enc name=encoder pass=0 speed-preset=4 tune=4 ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! " + pipelineStr
+			pipelineStr = fmt.Sprintf("%s ! %s ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, encoder, pipelineStr)
 		} else {
 			extension := filepath.Ext(savePath)
 			savePathTime := strings.TrimSuffix(savePath, extension) + ".timing.csv"
-			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay location=%s ! x264enc name=encoder pass=cbr speed-preset=ultrafast tune=zerolatency key-int-max=30 ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePathTime, savePath, pipelineStr)
+			pipelineStr = fmt.Sprintf("%s ! timecodeoverlay location=%s ! %s ! tee name=t ! queue ! h264parse ! avimux ! filesink location=%s t. ! queue ! rtph264pay name=rtph264pay mtu=1200 seqnum-offset=0 ! %s", src, savePathTime, encoder, savePath, pipelineStr)
 		}
 
 	case "vaapih264":
