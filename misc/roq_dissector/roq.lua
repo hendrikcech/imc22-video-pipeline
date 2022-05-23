@@ -5,8 +5,8 @@
 -- https://github.com/hendrikcech/rfc8888-dissector
 --
 -- Symlink/move this file to its own folder in the Wireshark plugin folder (e.g.
--- to ~/.config/wireshark/roq_dissector/roq.lua). Also install the rfc888
--- dissector the the plugin folder.
+-- to ~/.config/wireshark/plugins/roq_dissector/roq.lua). Also install the
+-- rfc888 dissector the the plugin folder.
 
 do
     roq_proto = Proto("roq","ROQ UDP RTP and RTCP packets")
