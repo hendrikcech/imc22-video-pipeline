@@ -121,24 +121,26 @@ void ScreamRx::Stream::receive(uint32_t time_ntp,
     }
 }
 
-bool ScreamRx::Stream::getStandardizedFeedback(uint32_t time_ntp,
-    unsigned char *buf,
-    int &size) {
+bool ScreamRx::Stream::getStandardizedFeedback(uint32_t time_ntp, unsigned char *buf, int &size) {
     uint16_t tmp_s;
     uint32_t tmp_l;
     size = 0;
+
     /*
     * Write RTP sender SSRC
     */
     tmp_l = htonl(ssrc);
     memcpy(buf, &tmp_l, 4);
     size += 4;
+
     /*
     * Write begin_seq
     * always report nReportedRtpPackets RTP packets
     */
-    tmp_s = highestSeqNr - uint16_t(nReportedRtpPackets - 1);
-    tmp_s = htons(tmp_s);
+    uint16_t sn_lo = highestSeqNrTx + 1;
+    if (highestSeqNr - highestSeqNrTx < uint16_t(nReportedRtpPackets - 1))
+        sn_lo = highestSeqNr - uint16_t(nReportedRtpPackets - 1);
+    tmp_s = htons(sn_lo);
     memcpy(buf + 4, &tmp_s, 2);
     size += 2;
 
@@ -150,11 +152,6 @@ bool ScreamRx::Stream::getStandardizedFeedback(uint32_t time_ntp,
     memcpy(buf + 6, &tmp_s, 2);
     size += 2;
     int ptr = 8;
-
-    /*
-    * Write 16bits report element for received RTP packets
-    */
-    uint16_t sn_lo = highestSeqNr - uint16_t(nReportedRtpPackets - 1);
 
     for (uint16_t k = 0; k < nReportedRtpPackets; k++) {
         uint16_t sn = sn_lo + k;
