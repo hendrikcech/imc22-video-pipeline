@@ -342,11 +342,11 @@ bool ScreamRx::createStandardizedFeedback(uint32_t time_ntp, bool isMark, unsign
         }
         if (stream == NULL)
             break;
-        if (stream->nRtpSinceLastRtcp == 0 && isFeedback) {
-            // Without this break, the feedback of the same stream is written
-            // multiple times until kMaxRtcpSize is reached.
+
+        // Include each stream only once in each RTCP feedback packet.
+        if (stream->nRtpSinceLastRtcp == 0 && stream->lastFeedbackT_ntp == time_ntp && isFeedback)
             break;
-        }
+
         isFeedback = true;
         int size_stream = 0;
         stream->getStandardizedFeedback(time_ntp, &buf[ptr], size_stream);
