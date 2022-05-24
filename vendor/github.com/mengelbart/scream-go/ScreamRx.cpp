@@ -328,7 +328,7 @@ bool ScreamRx::createStandardizedFeedback(uint32_t time_ntp, bool isMark, unsign
         * stream in the first iteration, a bit unnecessary.
         */
         Stream *stream = NULL;
-        uint32_t minT_ntp = ULONG_MAX;
+        uint32_t minT_ntp = time_ntp;
         for (auto it = streams.begin(); it != streams.end(); ++it) {
             uint32_t diffT_ntp = time_ntp - (*it)->lastFeedbackT_ntp;
             if (((*it)->nRtpSinceLastRtcp >= std::min(8,ackDiff) || diffT_ntp > 655 || isMark) && // 10ms in Q16
@@ -338,10 +338,6 @@ bool ScreamRx::createStandardizedFeedback(uint32_t time_ntp, bool isMark, unsign
             }
         }
         if (stream == NULL)
-            break;
-
-        // Include each stream only once in each RTCP feedback packet.
-        if (stream->nRtpSinceLastRtcp == 0 && stream->lastFeedbackT_ntp == time_ntp && isFeedback)
             break;
 
         isFeedback = true;
